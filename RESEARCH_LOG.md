@@ -70,3 +70,17 @@
 - **What was done:** Built `gate/sandbox.py`. This isolates untrusted code (G0) by running it in a subprocess with resource limits (5s CPU, 1GB RAM) and scrubbing the `AD_TOKEN_KEY` from the environment (Amendment D5).
 - **Test Result:** 71 tests passed.
 - **Why it matters for paper:** Proves that the LLM proposer code cannot read the signing keys or execute denial-of-service attacks against the host machine.
+
+## Stage S5a: The Application Form (Gate G1)
+- **Date:** 20 Nov 2026
+- **What was done:** Created the Migration Proposal schema (`proposer/schema.py`) and the Gate G1 validator (`gate/migration.py`). G1 ensures the AI's upgrade request has a valid code path, a non-empty list of changes, and proper float types for the new bounds. If the AI submits malformed JSON, it is rejected immediately with `MALFORMED_MIGRATION`.
+- **Test Result:** 75 tests passed.
+- **Why it matters for paper:** This establishes the formal contract between the Proposer (the LLM) and the Gate. The Gate rejects incomplete or structurally invalid proposals before wasting compute on the Oracle.
+
+## Stage S6: The Auditor's Eyes (Gate G3 & G4)
+- **Date:** 20 Nov 2026
+- **What was done:** 
+  1. Built Gate G3 (`gate/evidence.py`). It ensures the Oracle's measurements were taken on the *exact* code hash that was submitted, preventing the AI from swapping in better code after testing.
+  2. Built Gate G4 (`gate/measure.py`). It checks the Oracle's measured latencies against the `RETAIN` bounds. If an AI declares a metric as RETAIN but the Oracle measures it exceeding the bound, G4 throws an `UNDECLARED_WEAKENING` error.
+- **Test Result:** 85 tests passed.
+- **Why it matters for paper:** G3 prevents the AI from faking its test results (Mutant M7). G4 ensures the AI cannot secretly weaken the ambulances (CONTROL) while claiming it kept them strict.
