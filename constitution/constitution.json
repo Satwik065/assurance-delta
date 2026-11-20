@@ -1,0 +1,10 @@
+{
+    "calibrated": {
+        "r0_control_p99_bound_slots": 7.8,
+        "r0_bulk_p99_bound_slots": 985.53,
+        "r1_n_devices": 32,
+        "r3_bulk_load_multiplier": 5.0,
+        "r3_bulk_burstiness": 1.0
+    },
+    "frozen_at": "2026-11-20"
+}
