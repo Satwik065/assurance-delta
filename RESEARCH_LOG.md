@@ -123,3 +123,9 @@
 - **What was done:** Created `tests/test_gate_false_rejection.py`. This feeds the Legitimate Variants (Good Guys) into the Gate Orchestrator and asserts they are ACCEPTED.
 - **Test Result:** 101 tests passed.
 - **Why it matters for paper:** This proves the Gate has 0% false rejections on our deterministic variants. It does not arbitrarily block safe upgrades.
+
+## Stage S11: The Math (Wilson Confidence Intervals)
+- **Date:** 20 Nov 2026
+- **What was done:** Built `metrics/wilson.py`. This calculates the 95% Wilson confidence interval for detection and rejection rates.
+- **Test Result:** 104 tests passed.
+- **Why it matters for paper:** A simple percentage (e.g., "we caught 12/12") isn't enough for peer review. The Wilson interval proves statistical significance. For example, catching 12/12 gives a 95% lower bound of 76%, meaning even in the worst-case statistical universe, the system is highly reliable.
