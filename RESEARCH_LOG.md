@@ -111,3 +111,9 @@
 - **What was done:** Created `tests/test_gate_attacks.py`. This suite feeds the Mutants (M1 and M3c) directly into the Gate Orchestrator. It proves that M1 is rejected by G4 (Undeclared Weakening) and M3c is rejected by G5 (Scope Mismatch).
 - **Test Result:** 97 tests passed.
 - **Why it matters for paper:** This provides empirical proof of the architecture. It is not just theory; the code actively catches known unauthorized weakenings.
+
+## Stage S10b: The Good Guys (Legitimate Variants)
+- **Date:** 20 Nov 2026
+- **What was done:** Built `variants/legitimate.py`. This generates valid upgrade proposals (both R0 strict and R3 waived) with slight parameter noise, while strictly staying under the 80% safe margin of the bounds (Amendment D5).
+- **Test Result:** 99 tests passed.
+- **Why it matters for paper:** This provides the denominator for the false-rejection rate. We must prove that the Gate does not arbitrarily reject safe, legal upgrades due to statistical noise.
