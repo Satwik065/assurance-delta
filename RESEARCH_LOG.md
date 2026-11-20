@@ -96,3 +96,18 @@
 - **What was done:** Built `gate/gate.py`. This is the master orchestrator that chains the gates together. It takes the raw JSON proposal, runs G1 (malformed check), G3 (evidence hash), G4 (undeclared weakening), and G5 (token/scope). If any gate fails, it halts and returns a REJECT verdict with the specific error code.
 - **Test Result:** 93 tests passed.
 - **Why it matters for paper:** This is the deterministic core. It guarantees that the order of operations (G1 -> G3 -> G4 -> G5) is strictly enforced.
+
+## Stage S9: The Bad Guys (Mutants)
+- **Date:** 20 Nov 2026
+- **What was done:** Built `mutants/catalog.py`. This generates synthetic cheating proposals (Mutants) based on the spec. 
+  - M1: Weakens the RETAIN bound directly in the proposal (e.g., changes the limit from 7.8 to 100).
+  - M2: Submits stale or manipulated evidence.
+  - M3c: Attempts to use a BULK waiver token to waive the CONTROL limit (Scope mismatch).
+- **Test Result:** 95 tests passed.
+- **Why it matters for paper:** We cannot just assume the Gate works. We must actively attack it with known cheaters (mutants) to prove that the architecture holds up.
+
+## Stage S10a: The Executioner (Testing the Mutants)
+- **Date:** 20 Nov 2026
+- **What was done:** Created `tests/test_gate_attacks.py`. This suite feeds the Mutants (M1 and M3c) directly into the Gate Orchestrator. It proves that M1 is rejected by G4 (Undeclared Weakening) and M3c is rejected by G5 (Scope Mismatch).
+- **Test Result:** 97 tests passed.
+- **Why it matters for paper:** This provides empirical proof of the architecture. It is not just theory; the code actively catches known unauthorized weakenings.
