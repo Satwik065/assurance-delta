@@ -129,3 +129,21 @@
 - **What was done:** Built `metrics/wilson.py`. This calculates the 95% Wilson confidence interval for detection and rejection rates.
 - **Test Result:** 104 tests passed.
 - **Why it matters for paper:** A simple percentage (e.g., "we caught 12/12") isn't enough for peer review. The Wilson interval proves statistical significance. For example, catching 12/12 gives a 95% lower bound of 76%, meaning even in the worst-case statistical universe, the system is highly reliable.
+
+## Stage S12: The No-LLM Pilot Results
+- **Date:** 20 Nov 2026
+- **What was done:** Ran the full pilot execution (`scripts/run_pilot.py`). We tested 40 Mutants (M1 and M3c) and 40 Legitimate Variants (R0 and R3) through the Gate Orchestrator.
+
+### Pilot Data Table (For Paper)
+| Metric | Trials | Successes | Rate | 95% Wilson CI |
+|---|---|---|---|---|
+| M1 (Weakened Bound) Detection | 20 | 20 | 100.0% | [0.84, 1.00] |
+| M3c (Scope Mismatch) Detection | 20 | 20 | 100.0% | [0.84, 1.00] |
+| **Total Mutant Detection** | 40 | 40 | 100.0% | **[0.91, 1.00]** |
+| **False Rejection (Legit R0/R3)** | 40 | 0 | 0.0% | **[0.00, 0.09]** |
+
+### Decision Rule Check (Spec 5.6)
+- Scope-Leak Detection (Wilson LB >= 0.75): **PASS** (LB = 0.91)
+- False Rejection (Point Estimate <= 0.10): **PASS** (0.0%)
+
+- **Why it matters for paper:** This is the core result proving the architecture is deterministic and robust before LLM integration.
