@@ -90,3 +90,9 @@
 - **What was done:** Built `gate/scope_check.py` to verify `WAIVE` requests. G5 checks that the authorization token is cryptographically valid (not forged), unexpired, that the measured metric does not exceed the token's bound, and crucially, that the token's scope predicate (e.g., `class == 'BULK'`) actually covers the metric being waived.
 - **Test Result:** 90 tests passed.
 - **Why it matters for paper:** This implements the core defense against M3c (scope-blindness). It proves that an AI cannot use a token intended for BULK traffic to legitimately slow down CONTROL traffic.
+
+## Stage S8: The Orchestrator (Gate Master)
+- **Date:** 20 Nov 2026
+- **What was done:** Built `gate/gate.py`. This is the master orchestrator that chains the gates together. It takes the raw JSON proposal, runs G1 (malformed check), G3 (evidence hash), G4 (undeclared weakening), and G5 (token/scope). If any gate fails, it halts and returns a REJECT verdict with the specific error code.
+- **Test Result:** 93 tests passed.
+- **Why it matters for paper:** This is the deterministic core. It guarantees that the order of operations (G1 -> G3 -> G4 -> G5) is strictly enforced.
