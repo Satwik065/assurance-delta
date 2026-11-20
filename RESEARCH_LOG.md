@@ -117,3 +117,9 @@
 - **What was done:** Built `variants/legitimate.py`. This generates valid upgrade proposals (both R0 strict and R3 waived) with slight parameter noise, while strictly staying under the 80% safe margin of the bounds (Amendment D5).
 - **Test Result:** 99 tests passed.
 - **Why it matters for paper:** This provides the denominator for the false-rejection rate. We must prove that the Gate does not arbitrarily reject safe, legal upgrades due to statistical noise.
+
+## Stage S10c: The False Rejection Test
+- **Date:** 20 Nov 2026
+- **What was done:** Created `tests/test_gate_false_rejection.py`. This feeds the Legitimate Variants (Good Guys) into the Gate Orchestrator and asserts they are ACCEPTED.
+- **Test Result:** 101 tests passed.
+- **Why it matters for paper:** This proves the Gate has 0% false rejections on our deterministic variants. It does not arbitrarily block safe upgrades.
