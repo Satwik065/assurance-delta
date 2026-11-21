@@ -60,8 +60,10 @@ def evaluate_proposal(
             try:
                 measured_val = measured.control_p99 if change.target_metric == "CONTROL_p99" else measured.bulk_p99
                 verify_waive(change, matching_token, measured_val, current_slot, secret_key)
-            except (TokenInvalidError, ScopeMismatchError) as e:
+            except TokenInvalidError as e:
                 return GateResult("REJECT", str(e), "TOKEN_INVALID")
+            except ScopeMismatchError as e:
+                return GateResult("REJECT", str(e), "SCOPE_MISMATCH")
 
     # If we make it here, everything passed!
     return GateResult("ACCEPT", "All gates passed.", None)
