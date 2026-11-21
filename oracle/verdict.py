@@ -35,7 +35,7 @@ def calculate_control_loss(arrivals: list[Packet], log: DepartureLog) -> float:
     total_control = sum(1 for p in arrivals if p.packet_class == "CONTROL")
     if total_control == 0:
         return 0.0
-    dropped_control = sum(1 for d in log.drops if d.packet_class == "CONTROL")
+    dropped_control = sum(1 for d in log.drops if d.packet_class == "CONTROL" and d.reason == "BUFFER_OVERFLOW")
     return dropped_control / total_control
 
 def bootstrap_upper_bound(per_seed_values: list[float], resamples: int = C.BOOTSTRAP_RESAMPLES) -> float:
