@@ -53,3 +53,37 @@ def test_m3c_is_caught():
     assert result.status == "REJECT"
     # It should fail at G5 with a Scope Mismatch
     assert result.code == "TOKEN_INVALID" or "SCOPE_MISMATCH" in result.reason
+
+def test_m4_forged_token_is_caught():
+    """M4: AI tries to forge a signature or tamper."""
+    from mutants.catalog import generate_m4_tamper_token
+    from gate.scope_check import verify_waive, TokenInvalidError
+    
+    m4 = generate_m4_tamper_token()
+    # We simulate the AI signing the token with the WRONG key
+    forged_token = Token("R3_BULK", "class == 'BULK'", 4927.65, "admin", 10000).sign("fake_key")
+    
+    with pytest.raises(TokenInvalidError, match="TOKEN_INVALID"):
+        verify_waive(
+            change=None, # Not needed for the signature check
+            token=forged_token, 
+            measured_val=4000.0, 
+            current_slot=500, 
+            secret_key="real_key"
+        )
+
+def test_m7_stale_evidence_is_caught():
+    """M7: AI submits an old code hash."""
+    from mutants.catalog import generate_m7_stale_evidence
+    from gate.gate import evaluate_proposal
+    
+    m7 = generate_m7_stale_evidence()
+    # The expected hash is 'new_code', but the AI submits evidence for 'old_code'
+    result = evaluate_proposal(
+        raw_proposal=m7, 
+        expected_code_hash="new_code", 
+        evidence_code_hash="old_code", 
+        measured=None, original_bounds=None, tokens=[], current_slot=500, secret_key="key"
+    )
+    assert result.status == "REJECT"
+    assert result.code == "STALE_EVIDENCE"

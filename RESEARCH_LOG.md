@@ -236,3 +236,9 @@ Conclusion:
   - C3-no-scope applies a BULK waiver globally, allowing M3c to pass (Validates the need for G5).
 - **Test Result:** 112 tests passed.
 - **Why it matters for paper:** We no longer simulate the table; we have actual code that runs the different acceptance rules, proving the Pareto optimality of C3.
+
+## Stage S17: Advanced Mutants (M4, M7)
+- **Date:** 21 Nov 2026
+- **What was done:** Built the forged token mutant (M4) and the stale evidence mutant (M7) into the catalog. Added attacks to prove that the signature verification (G5) and the hash check (G3) catch them before they can affect the system.
+- **Test Result:** 114 tests passed.
+- **Why it matters for paper:** Proves the gate isn't just checking logic; it's checking cryptographic proofs and timeline consistency.
