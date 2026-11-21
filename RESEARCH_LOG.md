@@ -287,3 +287,42 @@ Conclusion:
 2. **R3 (WAIVE token) is solvable:** 2/3 models correctly used the authorization token, keeping CONTROL strict while allowing BULK to rise under the waived bound.
 3. **Llama 3.2 produced zero working code** for any rung -- all proposals crashed in the engine or failed to load.
 4. **The Oracle safely handled all failures:** No crashes, no false acceptances. Broken code was caught; overloaded schedulers were measured accurately.
+
+## Stage S19c: Complete 5-Rung Multi-Model Sweep (Final Results)
+- **Date:** 21 Nov 2026
+- **What was done:** Completed the full requirement ladder (R0-R4) across all 3 models (Qwen, Granite, Llama). 15 proposals total, each evaluated through the Oracle (5 seeds, audit + p99 verdict).
+
+### Complete Results Table (3 Models x 5 Rungs = 15 Proposals)
+| Model | Rung | Status | C_p99 | B_p99 | Scheduler Class |
+|---|---|---|---|---|---|
+| qwen2.5-coder:3b | R0 | PASS | 5.60 | 656.98 | ProposedScheduler |
+| qwen2.5-coder:3b | R1 | FAIL | 1023.80 | 1.60 | StrictPriorityRoundRobinScheduler |
+| qwen2.5-coder:3b | R2 | PASS | 6.40 | 855.16 | BurstyBulkScheduler |
+| qwen2.5-coder:3b | R3 | PASS | 4.80 | 1712.00 | ProposedScheduler |
+| qwen2.5-coder:3b | R4 | PASS | 5.20 | 218.20 | StrictPriorityRoundRobinScheduler |
+| granite4.1:3b | R0 | FAIL | 5.60 | 1465.80 | ProposedScheduler |
+| granite4.1:3b | R1 | FAIL | 1023.80 | 1.60 | StrictPriorityRoundRobinScheduler |
+| granite4.1:3b | R2 | LOAD_ERROR | N/A | N/A | Syntax error in generated code |
+| granite4.1:3b | R3 | PASS | 4.80 | 1712.00 | ProposedScheduler |
+| granite4.1:3b | R4 | PASS | 4.89 | 17.28 | LoadAwareStrictPriorityScheduler |
+| llama3.2:3b | R0 | ENGINE_ERROR | N/A | N/A | ProposedScheduler |
+| llama3.2:3b | R1 | ENGINE_ERROR | N/A | N/A | StrictPriorityRoundRobinScheduler |
+| llama3.2:3b | R2 | ENGINE_ERROR | N/A | N/A | BurstyBulkRoundRobinScheduler |
+| llama3.2:3b | R3 | LOAD_ERROR | N/A | N/A | Missing import: StrictPriorityRoundRobinScheduler |
+| llama3.2:3b | R4 | LOAD_ERROR | N/A | N/A | Missing import: QueueSnapshot |
+
+### Per-Model Summary
+| Model | R0 | R1 | R2 | R3 | R4 | Pass Rate |
+|---|---|---|---|---|---|---|
+| qwen2.5-coder:3b | PASS | FAIL | PASS | PASS | PASS | 4/5 (80%) |
+| granite4.1:3b | FAIL | FAIL | ERROR | PASS | PASS | 2/5 (40%) |
+| llama3.2:3b | ERROR | ERROR | ERROR | ERROR | ERROR | 0/5 (0%) |
+
+### Key Findings
+1. **R1 (Scale-out to N=32) defeated all 3 models.** Every model copied the baseline `StrictPriorityRoundRobinScheduler` instead of writing a new one. At N=32, CONTROL traffic (1.6 arrivals/slot) overwhelms the single uplink (1 service/slot), causing p99 = 1023.80. BULK is starved (p99 = 1.60 on the few packets served). This proves the requirement ladder is genuinely challenging.
+2. **R2 (Bursty Traffic) was solved only by Qwen**, which wrote a custom `BurstyBulkScheduler` class (C=6.40, B=855.16). Granite generated code with a syntax error (`from __future__ imports must occur at start`). Llama's code crashed in the engine.
+3. **R3 (WAIVE Token) was solved by 2/3 models.** Both Qwen and Granite correctly used the authorization token, keeping CONTROL strict (4.80) while allowing BULK to rise to 1712.00 (under the waived 4927.65 bound). Llama failed to load (missing import).
+4. **R4 (Capacity Conflict) produced an unexpected result.** Qwen and Granite both "passed" the p99 bounds, but this reveals a limitation of the p99 metric: under extreme overload (bulk_rate=0.30, total load 2.8x capacity), most BULK packets are dropped (buffer overflow), and the p99 is computed only on served packets. The few served BULK packets have moderate latency. The spec notes "BULK packet loss is unconstrained," so the gate does not reject based on loss. The gate's BLOCK_CONFLICT logic (based on the pre-registered capacity certificate, not the oracle) would catch this scenario before evaluation.
+5. **Llama 3.2 produced zero working code.** All 5 proposals either crashed in the engine (R0-R2) or failed to load due to missing imports (R3-R4). Llama referenced `QueueSnapshot` and `StrictPriorityRoundRobinScheduler` without importing them. This demonstrates that smaller models may lack the code-generation capability for this task.
+6. **Granite wrote the most creative scheduler** for R4: a `LoadAwareStrictPriorityScheduler` that achieved BULK p99 = 17.28 (extremely low), suggesting it aggressively manages the BULK queue under overload.
+7. **The Oracle safely handled all failures.** No crashes, no false acceptances. Broken code (Llama) was caught at load/engine level. Overloaded schedulers were measured accurately.

@@ -76,3 +76,12 @@ The baseline scheduler is:
 The traffic has exceeded capacity. Write a scheduler that keeps CONTROL under 7.8 slots and BULK under 985.53 slots under these extreme loads.
 Return ONLY valid Python code. Do not include markdown formatting or explanations.
 """
+
+def build_r2_prompt(baseline_code: str) -> str:
+    return f"""You are a systems engineer writing a Python scheduler for a wireless network.
+The baseline scheduler is:
+{baseline_code}
+
+The traffic pattern has changed. BULK packets now arrive in bursts (on/off pattern) instead of a steady stream. Write a scheduler that handles bursty BULK traffic while keeping CONTROL latency under 7.8 slots and BULK latency under 985.53 slots.
+Return ONLY valid Python code. Do not include markdown formatting or explanations.
+"""
