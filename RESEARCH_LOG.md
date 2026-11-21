@@ -248,3 +248,19 @@ Conclusion:
 - **What was done:** Implemented R1 (Scale-out to N=32, bounds remain strict) and R4 (Capacity Conflict). Added the `BLOCK_CONFLICT` logic to the Gate Orchestrator so R4 is rejected before it even hits the Oracle.
 - **Test Result:** 117 tests passed.
 - **Why it matters for paper:** Completes the Requirement Ladder. Proves the Gate distinguishes between a broken rule (reject) and a physically impossible rule (block).
+
+## Stage S19: Qwen Mini-Sweep Evaluation (R0, R1, R3)
+- **Date:** 21 Nov 2026
+- **What was done:** Ran Qwen 2.5 Coder 3B through 3 rungs (R0 baseline, R1 scale-out to N=32, R3 high BULK load with WAIVE token). Evaluated each generated scheduler through the Oracle (5 seeds, audit + p99 verdict).
+
+### Qwen Mini-Sweep Results
+| Rung | N | Bulk Rate | Status | C_p99 | B_p99 | Bound_C | Bound_B | Class |
+|---|---|---|---|---|---|---|---|---|
+| R0 (Baseline) | 8 | 0.02 | PASS | 5.60 | 656.98 | 7.80 | 985.53 | ProposedScheduler |
+| R1 (Scale-out) | 32 | 0.02 | FAIL | 1023.80 | 1.60 | 7.80 | 985.53 | StrictPriorityRoundRobinScheduler |
+| R3 (WAIVE) | 8 | 0.10 | PASS | 4.80 | 1712.00 | 7.80 | 4927.65 | ProposedScheduler |
+
+### Key Findings
+1. **R0 PASS:** Qwen wrote a working scheduler for the baseline scenario.
+2. **R1 FAIL:** Qwen copied the baseline `StrictPriorityRoundRobinScheduler` instead of writing a new one. At N=32, CONTROL traffic overwhelms the single uplink (1.6 arrivals/slot vs 1 service/slot), causing p99 = 1023.80. The AI failed to adapt its scheduling strategy for scale-out.
+3. **R3 PASS:** Given the WAIVE token in the prompt, Qwen correctly kept CONTROL strict (4.80) while allowing BULK to rise to 1712.00 (under the waived 4927.65 bound). This demonstrates the AI can use scoped authorization correctly when explicitly provided.
