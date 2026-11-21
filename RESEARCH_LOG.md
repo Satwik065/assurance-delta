@@ -264,3 +264,26 @@ Conclusion:
 1. **R0 PASS:** Qwen wrote a working scheduler for the baseline scenario.
 2. **R1 FAIL:** Qwen copied the baseline `StrictPriorityRoundRobinScheduler` instead of writing a new one. At N=32, CONTROL traffic overwhelms the single uplink (1.6 arrivals/slot vs 1 service/slot), causing p99 = 1023.80. The AI failed to adapt its scheduling strategy for scale-out.
 3. **R3 PASS:** Given the WAIVE token in the prompt, Qwen correctly kept CONTROL strict (4.80) while allowing BULK to rise to 1712.00 (under the waived 4927.65 bound). This demonstrates the AI can use scoped authorization correctly when explicitly provided.
+
+## Stage S19b: Full Multi-Model Mini-Sweep Results
+- **Date:** 21 Nov 2026
+- **What was done:** Ran the full mini-sweep across 3 models (Qwen, Granite, Llama) x 3 rungs (R0, R1, R3) = 9 proposals. Evaluated each through the Oracle (5 seeds, audit + p99 verdict).
+
+### Full Mini-Sweep Results Table
+| Model | Rung | Status | C_p99 | B_p99 | Class |
+|---|---|---|---|---|---|
+| qwen2.5-coder:3b | R0 | PASS | 5.60 | 656.98 | ProposedScheduler |
+| qwen2.5-coder:3b | R1 | FAIL | 1023.80 | 1.60 | StrictPriorityRoundRobinScheduler |
+| qwen2.5-coder:3b | R3 | PASS | 4.80 | 1712.00 | ProposedScheduler |
+| granite4.1:3b | R0 | FAIL | 5.60 | 1465.80 | ProposedScheduler |
+| granite4.1:3b | R1 | FAIL | 1023.80 | 1.60 | StrictPriorityRoundRobinScheduler |
+| granite4.1:3b | R3 | PASS | 4.80 | 1712.00 | ProposedScheduler |
+| llama3.2:3b | R0 | ENGINE_ERROR | N/A | N/A | ProposedScheduler |
+| llama3.2:3b | R1 | ENGINE_ERROR | N/A | N/A | StrictPriorityRoundRobinScheduler |
+| llama3.2:3b | R3 | LOAD_ERROR | N/A | N/A | N/A |
+
+### Key Findings
+1. **R1 (Scale-out) defeated all models:** All 3 copied the baseline scheduler. At N=32, CONTROL traffic (1.6 arrivals/slot) overwhelms the single uplink (1 service/slot), causing p99 = 1023.80. BULK is starved (p99 = 1.60 on the few packets served).
+2. **R3 (WAIVE token) is solvable:** 2/3 models correctly used the authorization token, keeping CONTROL strict while allowing BULK to rise under the waived bound.
+3. **Llama 3.2 produced zero working code** for any rung -- all proposals crashed in the engine or failed to load.
+4. **The Oracle safely handled all failures:** No crashes, no false acceptances. Broken code was caught; overloaded schedulers were measured accurately.
