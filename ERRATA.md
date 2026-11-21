@@ -83,3 +83,16 @@ changed**.
 - **Oracle v1.1 (`oracle/verdict.py`) SHA-256:** `868872711add43b405883f394f5524412035253daf45b01d279d631187af306e`
 - **R0 transient-overload finding:** At `N = 8, rate = 0.02`, total offered load is `0.40 + 0.64 = 1.04 > 1.00`. R0 avoids overflow at `5,000` slots, overflows at `25,000` slots (`87` BULK overflows), and under strict 20-seed v1.1 evaluation `R0_ref` passes `18/20` seeds (`R2_ref` passes `17/20`), tripping the `19/20` guard.
 - **R3 legitimate-variant quantization noise:** Across 60 real 20-seed legitimate variants, `R0` (`0/20`, UB=`0.161`) and `R1` (`0/20`, UB=`0.161`) pass, total false rejection is `3/60` (`5.0%`, UB=`0.137`), and `R3` exhibits `3/20` (`15.0%`, UB=`0.360 > 0.25`) rejections due to integer-slot quantization (`7.0 -> 8.0 > 7.80` on 2/20 seeds), not gate logic error.
+
+## E7 — Constitution v1.2 Pre-Registered Blind Calibration Amendment (2026-11-21)
+- **Constitution v1.2 SHA-256:** `105c6fd264017e488f75293e5036c6cd7d4b068f6ab9e77aece673cc72219879`
+- **v1.1 preservation:** `constitution/constitution.json` (v1.1), `generated/v11_*`, and `generated/oracle_cache_v11.json` are preserved untouched as the as-run v1.1 record. All v1.2 outputs write exclusively to `constitution/constitution_v12.json` and `generated/v12_*`.
+- **Unchanged invariants:** Multipliers (`1.5x` R0, `5.0x` R3), Oracle v1.1 metric rules, gate logic (`G0–G5`), and pilot decision-rule thresholds are **unchanged**.
+- **Blind calibration changes (chosen on `CALIBRATION_SEEDS = 10000..10019` only):**
+  1. **Horizon (`5,000 -> 200,000` slots):** `75.3 s` sequential 20-seed runtime (`< T1 = 120 s`), yielding `80,000` CONTROL (`800` tail) and `14,378` BULK (`143.8` tail) packets/seed on R0 (`>= 5,169` BULK pkts/seed across all rungs).
+  2. **R0 & R2 (`rate = 0.02, rho = 1.04 -> rate = 0.0090, rho = 0.688 <= 0.70`):** `0` overflow; R2 uses `burstiness = 0.10`. Derived `1.5x` bounds: `CONTROL <= 8.77`, `BULK <= 46.22`, `5x` waived `BULK <= 231.10`. Fresh `VERDICT_SEED_SET` check: `R0_ref` passes `20/20` (`C_ub=6.40, B_ub=30.79`) and `R2_ref` passes `20/20` (`C_ub=6.45, B_ub=34.55`).
+  3. **R1 scale-out (`N = 12, rate = 0.003 -> N = 13, rate = 0.0020, rho = 0.754 <= 0.90`):** Baseline fails (`18/20 <= 8.77`); hand-written `OldestFirstStrictScheduler` (`proposer/reference/r1_v12.py`) passes `20/20` (`C_ub = 6.20, B_ub = 28.08`, both `<= 0.80 * bound`) with `0` overflow.
+  4. **R3 BULK load (`rate = 0.030, rho = 1.36 -> rate = 0.0155, rho = 0.896 < 1.0`):** `0` overflow, fails original `46.22` (`20/20`), passes waived `231.10` (`20/20`, `B_ub = 121.31`, `52.5%` of waived bound), `CONTROL` strict (`C_ub = 6.50, 20/20`).
+  5. **Diversity upgrade:** 10 distinct legitimate algorithm families (20 variants) run at actual rung operating points; 14 distinct weak mechanisms (7 dev + 7 holdout) with Wilson CIs at both variant level and base-cheat level.
+  6. **Saved LLM prompts (G1):** The 165 saved LLM proposals (generated under v1.0 prompts quoting `7.8`, `985.53`, `4927.65`) are re-evaluated offline without Ollama regeneration.
+  7. **Reporting discipline:** Positive controls (`M1, M2`), informative mutants (`M3a–c, M3_boundary, M4`), static checks (`M5, M7`), and stretch (`M6`) reported separately; `H1` reported as **inconclusive**.

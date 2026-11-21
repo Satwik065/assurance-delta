@@ -187,3 +187,32 @@ SIM_BULK_BUFFER_PACKETS_PER_QUEUE: int = 128  # CONTROL stays at SIM_BUFFER_PACK
 R1_CALIBRATED_N_DEVICES: int = 12
 R1_CALIBRATED_BULK_RATE: float = 0.003
 R3_CALIBRATED_BULK_RATE: float = 0.030        # Sub-overflow window: 985.53 < p99 < 4927.65
+
+
+# ===========================================================================
+# Constitution v1.2 Pre-Registered Calibration Amendment (see ERRATA E7)
+# All v1.0/v1.1 constants above remain intact for historical reproducibility.
+# ===========================================================================
+CONSTITUTION_V12_VERSION: str = "1.2"
+CONSTITUTION_V12_JSON_PATH: str = "constitution/constitution_v12.json"
+V12_HORIZON_SLOTS: int = 200_000
+V12_R0_N_DEVICES: int = 8
+V12_R0_BULK_RATE: float = 0.0090
+V12_R1_N_DEVICES: int = 13
+V12_R1_BULK_RATE: float = 0.0020
+V12_R2_BULK_BURSTINESS: float = 0.10
+V12_R3_BULK_RATE: float = 0.0155
+V12_R4_BULK_RATE: float = 0.3000
+
+
+def load_calibrated_v12(path: str = CONSTITUTION_V12_JSON_PATH) -> dict:
+    """Return the calibrated dict from constitution_v12.json."""
+    p = Path(path)
+    if not p.exists() or p.stat().st_size == 0:
+        raise NotCalibratedError(f"{path} has not been frozen yet.")
+    data = json.loads(p.read_text(encoding="utf-8"))
+    calibrated = data.get("calibrated", {})
+    missing = [k for k in CALIBRATED_KEYS if k not in calibrated]
+    if missing:
+        raise NotCalibratedError(f"{path} is missing calibrated keys: {missing}")
+    return calibrated
