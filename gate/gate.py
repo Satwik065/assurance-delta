@@ -32,6 +32,11 @@ def evaluate_proposal(
     except MalformedMigrationError as e:
         return GateResult("REJECT", str(e), "MALFORMED_MIGRATION")
         
+    # Check for BLOCK_CONFLICT (R4)
+    for change in proposal.changes:
+        if change.req_class == "CONFLICT":
+            return GateResult("REJECT", f"BLOCK_CONFLICT: Unreconcilable obligation {change.id}", "BLOCK_CONFLICT")
+
     # G3: Evidence Freshness
     try:
         verify_evidence_freshness(expected_code_hash, evidence_code_hash)

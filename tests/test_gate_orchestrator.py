@@ -69,3 +69,25 @@ def test_missing_token_rejected():
     )
     assert result.status == "REJECT"
     assert result.code == "TOKEN_INVALID"
+
+def test_r4_conflict_blocks():
+    from requirements_model.rungs import get_r4_obligations
+    from requirements_model.classes import RequirementClass
+    
+    # Convert the Requirement object to a raw dict for the proposal
+    r4_rules = get_r4_obligations()
+    raw_proposal = {
+        "code_path": "r4.py",
+        "changes": [
+            {"id": r4_rules[0].id, "req_class": r4_rules[0].req_class.value, "target_metric": r4_rules[0].target_metric, "new_bound": r4_rules[0].bound}
+        ]
+    }
+    
+    result = evaluate_proposal(
+        raw_proposal=raw_proposal,
+        expected_code_hash="h", evidence_code_hash="h",
+        measured=None, original_bounds=None, tokens=[], current_slot=500, secret_key="key"
+    )
+    
+    assert result.status == "REJECT"
+    assert result.code == "BLOCK_CONFLICT"

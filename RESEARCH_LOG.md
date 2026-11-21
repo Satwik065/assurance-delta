@@ -242,3 +242,9 @@ Conclusion:
 - **What was done:** Built the forged token mutant (M4) and the stale evidence mutant (M7) into the catalog. Added attacks to prove that the signature verification (G5) and the hash check (G3) catch them before they can affect the system.
 - **Test Result:** 114 tests passed.
 - **Why it matters for paper:** Proves the gate isn't just checking logic; it's checking cryptographic proofs and timeline consistency.
+
+## Stage S18: The Remaining Rungs (R1 and R4)
+- **Date:** 21 Nov 2026
+- **What was done:** Implemented R1 (Scale-out to N=32, bounds remain strict) and R4 (Capacity Conflict). Added the `BLOCK_CONFLICT` logic to the Gate Orchestrator so R4 is rejected before it even hits the Oracle.
+- **Test Result:** 117 tests passed.
+- **Why it matters for paper:** Completes the Requirement Ladder. Proves the Gate distinguishes between a broken rule (reject) and a physically impossible rule (block).
