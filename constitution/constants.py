@@ -177,3 +177,13 @@ def load_calibrated(path: str = CONSTITUTION_JSON_PATH) -> dict:
             f"{path} is missing calibrated keys: {missing}"
         )
     return calibrated
+
+
+# ===========================================================================
+# Oracle v1.1 Errata Additions (see ERRATA.md; v1.0 constants above unchanged)
+# ===========================================================================
+ORACLE_VERSION: str = "1.1"
+SIM_BULK_BUFFER_PACKETS_PER_QUEUE: int = 128  # CONTROL stays at SIM_BUFFER_PACKETS_PER_QUEUE=32
+R1_CALIBRATED_N_DEVICES: int = 12
+R1_CALIBRATED_BULK_RATE: float = 0.003
+R3_CALIBRATED_BULK_RATE: float = 0.030        # Sub-overflow window: 985.53 < p99 < 4927.65

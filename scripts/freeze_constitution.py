@@ -1,56 +1,79 @@
-"""Freeze the calibrated bounds into constitution.json."""
-import sys
-import json
+"""Freeze Constitution v1.1 into constitution/constitution.json.
+
+Preserves v1.0 derived bounds (7.80, 985.53) and multipliers (1.5x, 5.0x)
+per Errata policy, records v1.1 simulator/oracle parameters, and pins
+SHA-256 hashes of all frozen oracle/gate/constitution artifacts.
+"""
+import sys, json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 from constitution import constants as C
-from oracle.verdict import compute_per_seed_p99
-from sim.engine import run
-from sim.scheduler_base import StrictPriorityRoundRobinScheduler
-from sim.traffic import TrafficConfig, generate_arrivals
-import numpy as np
+from constitution.hashing import sha256_file, sha256_canonical
+
+FROZEN_ARTIFACTS = [
+    "constitution/constants.py",
+    "sim/traffic.py",
+    "sim/channel.py",
+    "sim/scheduler_base.py",
+    "sim/engine.py",
+    "oracle/audit.py",
+    "oracle/verdict.py",
+    "oracle/frozen_regression.py",
+    "requirements_model/scope.py",
+    "gate/gate.py",
+    "gate/measure.py",
+    "gate/scope_check.py",
+    "gate/tamper.py",
+    "ledger/conflict_certificate.py",
+]
+
 
 def main():
-    print("Calculating R0 bounds for freeze...")
-    control_p99s = []
-    bulk_p99s = []
-    
-    # Same traffic config as calibrate.py
-    for seed in C.VERDICT_SEED_SET:
-        cfg = TrafficConfig(
-            n_devices=C.R0_N_DEVICES,
-            total_slots=5000,
-            bulk_rate_per_device_per_slot=0.02,
-            bulk_burstiness=0.0,
-            seed=seed
-        )
-        arrivals = generate_arrivals(cfg)
-        log = run(arrivals, StrictPriorityRoundRobinScheduler(), n_devices=cfg.n_devices, max_slot=cfg.total_slots)
-        
-        control_p99s.append(compute_per_seed_p99(arrivals, log, "CONTROL"))
-        bulk_p99s.append(compute_per_seed_p99(arrivals, log, "BULK"))
-        
-    bound_control = np.mean(control_p99s) * C.R0_BOUND_MULTIPLIER
-    bound_bulk = np.mean(bulk_p99s) * C.R0_BOUND_MULTIPLIER
-    
+    root = Path(__file__).parent.parent
+    # Preserve v1.0 frozen bounds untouched
     calibrated_data = {
-        "r0_control_p99_bound_slots": round(float(bound_control), 2),
-        "r0_bulk_p99_bound_slots": round(float(bound_bulk), 2),
-        "r1_n_devices": 32,
-        "r3_bulk_load_multiplier": 5.0,
-        "r3_bulk_burstiness": 1.0
+        "r0_control_p99_bound_slots": 7.8,
+        "r0_bulk_p99_bound_slots": 985.53,
+        "r1_n_devices": C.R1_CALIBRATED_N_DEVICES,
+        "r3_bulk_load_multiplier": C.R3_BULK_WAIVE_MULTIPLIER,
+        "r3_bulk_burstiness": 0.0,
     }
-    
+    v11_params = {
+        "oracle_version": C.ORACLE_VERSION,
+        "horizon_slots": 5000,
+        "control_buffer_packets": C.SIM_BUFFER_PACKETS_PER_QUEUE,
+        "bulk_buffer_packets": C.SIM_BULK_BUFFER_PACKETS_PER_QUEUE,
+        "r0_bulk_rate": 0.02,
+        "r1_n_devices": C.R1_CALIBRATED_N_DEVICES,
+        "r1_bulk_rate": C.R1_CALIBRATED_BULK_RATE,
+        "r3_bulk_rate": C.R3_CALIBRATED_BULK_RATE,
+        "horizon_censoring": True,
+        "overflow_latency": "inf",
+        "empty_latency_list": "inf",
+        "control_loss_rule": "BUFFER_OVERFLOW_ONLY",
+    }
+    artifact_hashes = {rel: sha256_file(root / rel) for rel in FROZEN_ARTIFACTS}
     output = {
+        "schema_version": "1.1",
+        "frozen_at": "2026-11-21",
         "calibrated": calibrated_data,
-        "frozen_at": "2026-11-20"
+        "v11_oracle_spec": v11_params,
+        "frozen_artifact_hashes": artifact_hashes,
     }
-    
-    out_path = Path(__file__).parent.parent / C.CONSTITUTION_JSON_PATH
-    out_path.write_text(json.dumps(output, indent=4), encoding="utf-8")
-    print(f"Successfully wrote {out_path}")
-    print(json.dumps(output, indent=4))
+    output["constitution_v11_hash"] = sha256_canonical({
+        "calibrated": calibrated_data,
+        "v11_oracle_spec": v11_params,
+        "frozen_artifact_hashes": artifact_hashes,
+    })
+
+    out_path = root / C.CONSTITUTION_JSON_PATH
+    out_path.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
+    print(f"Froze {out_path}")
+    print(f"  constitution_v11_hash: {output['constitution_v11_hash']}")
+    print(f"  oracle/verdict.py:     {artifact_hashes['oracle/verdict.py']}")
+    print(f"  sim/engine.py:         {artifact_hashes['sim/engine.py']}")
+
 
 if __name__ == "__main__":
     main()

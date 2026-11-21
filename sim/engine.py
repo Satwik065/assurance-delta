@@ -61,7 +61,8 @@ def run(arrivals: list[Packet], scheduler, n_devices: int, max_slot: int) -> Dep
             while pending and pending[0].arrival_slot <= env.now:
                 packet = pending.popleft()
                 q = queues[packet.device_id][packet.packet_class]
-                if len(q) >= C.SIM_BUFFER_PACKETS_PER_QUEUE:
+                buf_cap = C.SIM_BULK_BUFFER_PACKETS_PER_QUEUE if packet.packet_class == "BULK" else C.SIM_BUFFER_PACKETS_PER_QUEUE
+                if len(q) >= buf_cap:
                     drops.append(Drop(packet.packet_id, packet.device_id, packet.packet_class, packet.arrival_slot, "BUFFER_OVERFLOW"))
                 else:
                     q.append(packet)

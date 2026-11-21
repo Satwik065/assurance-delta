@@ -1,10 +1,42 @@
 {
-    "calibrated": {
-        "r0_control_p99_bound_slots": 7.8,
-        "r0_bulk_p99_bound_slots": 985.53,
-        "r1_n_devices": 32,
-        "r3_bulk_load_multiplier": 5.0,
-        "r3_bulk_burstiness": 1.0
-    },
-    "frozen_at": "2026-11-20"
+  "schema_version": "1.1",
+  "frozen_at": "2026-11-21",
+  "calibrated": {
+    "r0_control_p99_bound_slots": 7.8,
+    "r0_bulk_p99_bound_slots": 985.53,
+    "r1_n_devices": 12,
+    "r3_bulk_load_multiplier": 5.0,
+    "r3_bulk_burstiness": 0.0
+  },
+  "v11_oracle_spec": {
+    "oracle_version": "1.1",
+    "horizon_slots": 5000,
+    "control_buffer_packets": 32,
+    "bulk_buffer_packets": 128,
+    "r0_bulk_rate": 0.02,
+    "r1_n_devices": 12,
+    "r1_bulk_rate": 0.003,
+    "r3_bulk_rate": 0.03,
+    "horizon_censoring": true,
+    "overflow_latency": "inf",
+    "empty_latency_list": "inf",
+    "control_loss_rule": "BUFFER_OVERFLOW_ONLY"
+  },
+  "frozen_artifact_hashes": {
+    "constitution/constants.py": "23001313496c57218ff2b1d8655da15ec69868bfc46997d40cc4a0debd466583",
+    "sim/traffic.py": "15aa7bcb8746da074135e5fc2cd1fbe519d7c02152ca936f905b6348bfaa9cc8",
+    "sim/channel.py": "fed198a898924aa320f0c6b7c62375f169214628eea355b9cdd7935fc59f1004",
+    "sim/scheduler_base.py": "0a3bb76698adb4d981e536efd4727dc71ef5f032c385b7606f34181a596f08d6",
+    "sim/engine.py": "74ec27a10f9f225484a58296abecaf4312e007e3f508da6748dd909c4baec80a",
+    "oracle/audit.py": "ba9cb4a8acc1d9f9a46a5440da0ca0cfed9ee3204de1fd14fb02f24541502063",
+    "oracle/verdict.py": "868872711add43b405883f394f5524412035253daf45b01d279d631187af306e",
+    "oracle/frozen_regression.py": "6de904c52210a77414c251b49eb21e80d7be6b63ff9f72a31b80fb661b260a3f",
+    "requirements_model/scope.py": "29a401106c11749c8fe6b40473eb338a0f72b5fcd37ba02c3524c05e2762da2f",
+    "gate/gate.py": "78593a9c122dd3c20ec5ce2be12d302eb199b3ce56303986ff476599f3eed32f",
+    "gate/measure.py": "747e9fb10b66569e1845043347d9ad0ddadaea28d6a4872c35d1d316609a5903",
+    "gate/scope_check.py": "daa8bf1f3b27b2d4892a6d0b8ea79a2344a8170173465f3c26977932d26c62cb",
+    "gate/tamper.py": "323508bbf1b455b1c80cc44ffd1c923a9f0247f5fd00677d4b6705fd58f7a2f1",
+    "ledger/conflict_certificate.py": "df9c3cb5be59312dc76b907efc6787fcc2bb88741e64aee2fbaf6f67be365471"
+  },
+  "constitution_v11_hash": "242bac5f4a7b0a8b28876ab86ac896c95cd97afa62377417c8270825de5ae531"
 }

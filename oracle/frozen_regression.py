@@ -55,8 +55,8 @@ def frozen_regression_check(scheduler, n_devices: int = C1_PRIME_N_DEVICES,
         if loss > 0:
             return RegressionResult(False, f"CONTROL loss={loss:.4f} on seed {seed} (must be zero)", control_p99s, bulk_p99s)
 
-        control_p99s.append(compute_per_seed_p99(arrivals, log, "CONTROL"))
-        bulk_p99s.append(compute_per_seed_p99(arrivals, log, "BULK"))
+        control_p99s.append(compute_per_seed_p99(arrivals, log, "CONTROL", horizon=total_slots))
+        bulk_p99s.append(compute_per_seed_p99(arrivals, log, "BULK", horizon=total_slots))
 
     # Check MEAN of 5 seeds against bound (matching calibration methodology)
     mean_c = sum(control_p99s) / len(control_p99s)

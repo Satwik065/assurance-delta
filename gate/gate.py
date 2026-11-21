@@ -1,6 +1,7 @@
-"""The Gate Orchestrator. Runs a proposal through G0-G5 and the Oracle."""
+"""The Gate Orchestrator. Runs a proposal through G1, G3, G4, G5 (plus BLOCK_CONFLICT)."""
 from __future__ import annotations
 from dataclasses import dataclass
+from typing import Any
 from proposer.schema import MigrationProposal
 from gate.migration import validate_migration, MalformedMigrationError
 from gate.tamper import verify_frozen_files, verify_ledger_head, TamperError
@@ -9,11 +10,13 @@ from gate.measure import check_undeclared_weakening, UndeclaredWeakeningError, M
 from gate.scope_check import verify_waive, TokenInvalidError, ScopeMismatchError
 from ledger.tokens import Token
 
+
 @dataclass(frozen=True)
 class GateResult:
     status: str  # "ACCEPT", "REJECT"
     reason: str
     code: str | None = None
+
 
 def evaluate_proposal(
     raw_proposal: dict,
@@ -24,18 +27,22 @@ def evaluate_proposal(
     tokens: list[Token],
     current_slot: int,
     secret_key: str,
+    scenario_context: dict[str, Any] | None = None,
 ) -> GateResult:
-    
     # G1: Validate Form
     try:
         proposal = validate_migration(raw_proposal)
     except MalformedMigrationError as e:
         return GateResult("REJECT", str(e), "MALFORMED_MIGRATION")
-        
-    # Check for BLOCK_CONFLICT (R4)
+
+    # BLOCK_CONFLICT (R4)
     for change in proposal.changes:
         if change.req_class == "CONFLICT":
-            return GateResult("REJECT", f"BLOCK_CONFLICT: Unreconcilable obligation {change.id}", "BLOCK_CONFLICT")
+            return GateResult(
+                "REJECT",
+                f"BLOCK_CONFLICT: Unreconcilable obligation {change.id}",
+                "BLOCK_CONFLICT",
+            )
 
     # G3: Evidence Freshness
     try:
@@ -52,18 +59,28 @@ def evaluate_proposal(
     # G5: Token and Scope Checks
     for change in proposal.changes:
         if change.req_class == "WAIVE":
-            # Find the token that matches this requirement ID
             matching_token = next((t for t in tokens if t.requirement_id == change.id), None)
             if not matching_token:
-                return GateResult("REJECT", f"No token provided for WAIVE {change.id}", "TOKEN_INVALID")
-                
+                return GateResult(
+                    "REJECT", f"No token provided for WAIVE {change.id}", "TOKEN_INVALID"
+                )
             try:
-                measured_val = measured.control_p99 if change.target_metric == "CONTROL_p99" else measured.bulk_p99
-                verify_waive(change, matching_token, measured_val, current_slot, secret_key)
+                measured_val = (
+                    measured.control_p99
+                    if change.target_metric == "CONTROL_p99"
+                    else measured.bulk_p99
+                )
+                verify_waive(
+                    change,
+                    matching_token,
+                    measured_val,
+                    current_slot,
+                    secret_key,
+                    scenario_context=scenario_context,
+                )
             except TokenInvalidError as e:
                 return GateResult("REJECT", str(e), "TOKEN_INVALID")
             except ScopeMismatchError as e:
                 return GateResult("REJECT", str(e), "SCOPE_MISMATCH")
 
-    # If we make it here, everything passed!
     return GateResult("ACCEPT", "All gates passed.", None)

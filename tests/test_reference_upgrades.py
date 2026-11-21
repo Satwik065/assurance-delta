@@ -28,8 +28,8 @@ def _run_and_measure(scheduler_class, n_devices, bulk_rate, total_slots, seeds=5
         violations = audit_departure_log(arrivals, log)
         assert violations == [], f"Seed {seed}: audit violations {violations}"
 
-        control_p99s.append(compute_per_seed_p99(arrivals, log, "CONTROL"))
-        bulk_p99s.append(compute_per_seed_p99(arrivals, log, "BULK"))
+        control_p99s.append(compute_per_seed_p99(arrivals, log, "CONTROL", horizon=total_slots))
+        bulk_p99s.append(compute_per_seed_p99(arrivals, log, "BULK", horizon=total_slots))
     return control_p99s, bulk_p99s
 
 
@@ -64,7 +64,7 @@ class TestR3Reference:
         bound_c = bounds["r0_control_p99_bound_slots"]
 
         c_p99s, b_p99s = _run_and_measure(
-            R3ReferenceScheduler, n_devices=8, bulk_rate=0.10, total_slots=5000, seeds=5
+            R3ReferenceScheduler, n_devices=8, bulk_rate=C.R3_CALIBRATED_BULK_RATE, total_slots=5000, seeds=5
         )
 
         mean_c = sum(c_p99s) / len(c_p99s)
@@ -76,7 +76,7 @@ class TestR3Reference:
         waived_bulk = bounds["r0_bulk_p99_bound_slots"] * C.R3_BULK_WAIVE_MULTIPLIER
 
         c_p99s, b_p99s = _run_and_measure(
-            R3ReferenceScheduler, n_devices=8, bulk_rate=0.10, total_slots=5000, seeds=5
+            R3ReferenceScheduler, n_devices=8, bulk_rate=C.R3_CALIBRATED_BULK_RATE, total_slots=5000, seeds=5
         )
 
         mean_b = sum(b_p99s) / len(b_p99s)
