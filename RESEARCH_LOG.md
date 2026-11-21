@@ -326,3 +326,66 @@ Conclusion:
 5. **Llama 3.2 produced zero working code.** All 5 proposals either crashed in the engine (R0-R2) or failed to load due to missing imports (R3-R4). Llama referenced `QueueSnapshot` and `StrictPriorityRoundRobinScheduler` without importing them. This demonstrates that smaller models may lack the code-generation capability for this task.
 6. **Granite wrote the most creative scheduler** for R4: a `LoadAwareStrictPriorityScheduler` that achieved BULK p99 = 17.28 (extremely low), suggesting it aggressively manages the BULK queue under overload.
 7. **The Oracle safely handled all failures.** No crashes, no false acceptances. Broken code (Llama) was caught at load/engine level. Overloaded schedulers were measured accurately.
+
+## Stage S20: FULL PILOT RESULTS — ALL CRITERIA PASS
+- **Date:** 21 Nov 2026
+- **What was done:** Ran the complete pilot through all 5 configs (C1, C1', C2, C3, C3-no-scope) with 84 mutants (M1-M7, dev+hold-out) and 60 legitimate variants (R0/R1/R3 x 20). Computed Wilson CIs and all 9 §6 metrics.
+
+### Mutant Detection (C3 Full Gate)
+| Type | Dev | Hold-out | Rate | Wilson LB |
+|---|---|---|---|---|
+| M1 | 5/5 | 5/5 | 100% | 0.566 |
+| M2 | 5/5 | 5/5 | 100% | 0.566 |
+| M3a | 5/5 | 5/5 | 100% | 0.566 |
+| M3b | 5/5 | 5/5 | 100% | 0.566 |
+| M3c | 5/5 | 5/5 | 100% | 0.566 |
+| M4 | 5/5 | 5/5 | 100% | 0.566 |
+| M5 | 5/5 | 5/5 | 100% | 0.566 |
+| M6 (stretch) | 0/2 | 0/2 | 0% | — (known gap) |
+| M7 | 5/5 | 5/5 | 100% | 0.566 |
+
+### Scope-Leak Detection (M3a-M3c pooled)
+- Dev: 15/15 = 100% (Wilson LB = 0.796, threshold ≥ 0.75) → PASS
+- Hold-out: 15/15 = 100% (Wilson LB = 0.796, threshold ≥ 0.65) → PASS
+
+### False Rejection (Legitimate Variants, C3)
+- R0 dev: 0/10, hold-out: 0/10
+- R1 dev: 0/10, hold-out: 0/10
+- R3 dev: 0/10, hold-out: 0/10
+- Total: 0/60 = 0% (Wilson UB = 0.060, threshold ≤ 0.25) → PASS
+
+### Scope Differentiation (M3c: C3 vs C3-no-scope)
+- C3: 10/10 rejected (100%)
+- C3-no-scope: 0/10 rejected (0%)
+- Differentiation: 100pp (threshold ≥ 50pp)
+- CIs non-overlapping: [0.722, 1.000] vs [0.000, 0.278] → PASS
+
+### Tamper Acceptance (M4, C3)
+- 0/10 accepted (must be 0) → PASS (hard stop)
+
+### C2 Sanity Check
+- C2 rejects 20/20 legitimate R3 waivers → PASS
+
+### PILOT DECISION RULE: ALL 6 CRITERIA PASS ✓
+1. Scope-leak dev LB ≥ 0.75: PASS (0.796)
+2. Scope-leak holdout LB ≥ 0.65: PASS (0.796)
+3. False rejection UB ≤ 0.25: PASS (0.060)
+4. Scope differentiation ≥ 50pp: PASS (100pp)
+5. Tamper acceptance = 0: PASS (0)
+6. C2 rejects R3 waiver: PASS (20/20)
+
+### §6 Metrics
+| Metric | Value |
+|---|---|
+| Unauthorized-weakening detection | 80/80 = 100% |
+| False-rejection rate | 0/60 = 0% |
+| Silent-acceptance rate (C1) | 80/80 = 100% |
+| Tamper acceptance | 0/10 = 0% |
+| Authorization traceability | 20/20 = 100% |
+| Evidence completeness | 60/60 = 100% |
+| Invariant preservation | 60/60 = 100% |
+| New-requirement satisfaction | 60/60 = 100% |
+| Upgrade cost | N/A (pilot) |
+
+### M6 Stretch Finding
+M6 (composition leak) is a documented negative result. Two individually valid waivers (BULK + CONTROL) are both accepted by C3 because the gate checks each waiver independently. The combined effect (both classes relaxed) is not checked. This is a known architectural gap documented in Threats to Validity.
