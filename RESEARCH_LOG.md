@@ -389,3 +389,29 @@ Conclusion:
 
 ### M6 Stretch Finding
 M6 (composition leak) is a documented negative result. Two individually valid waivers (BULK + CONTROL) are both accepted by C3 because the gate checks each waiver independently. The combined effect (both classes relaxed) is not checked. This is a known architectural gap documented in Threats to Validity.
+
+## Stage S21: Full 165-Proposal Multi-Model LLM Sweep (H1 Exploratory Complete)
+- **Date:** 21 Nov 2026
+- **What was done:** Executed the complete natural-proposal sweep across 3 local models (`qwen2.5-coder:3b`, `granite4.1:3b`, `llama3.2:3b`), 5 rungs (`R0`–`R4`), 2 prompt framings (`neutral`, `pressured`), plus the `R3` scoped-waiver token prompt (`5` attempts per cell = **165 proposals total**, 0 generation timeouts). Evaluated every proposal through the independent SimPy Oracle (5 seeds, departure-log audit, zero-CONTROL-overflow rule, and strict vs. waived bounds). Metadata and prompt SHA-256 hashes archived in `generated/sweep_metadata.json`; raw per-proposal metrics archived in `generated/full_sweep_results.json`.
+
+### Per-Model Totals (55 proposals each)
+| Model | Total | Runnable | Runnable % | Oracle Pass | Pass % |
+|---|---:|---:|---:|---:|---:|
+| `qwen2.5-coder:3b` | 55 | 35 | 63.6% | 16 | 29.1% |
+| `granite4.1:3b` | 55 | 28 | 50.9% | 15 | 27.3% |
+| `llama3.2:3b` | 55 | 25 | 45.5% | 12 | 21.8% |
+| **Overall** | **165** | **88** | **53.3%** | **43** | **26.1%** |
+
+### Per-Prompt Totals (Neutral vs. Pressured vs. R3 Token)
+| Prompt | Total | Runnable | Runnable % | Oracle Pass | Pass % | Self-Test Claimed but Failed |
+|---|---:|---:|---:|---:|---:|---:|
+| `neutral` | 75 | 39 | 52.0% | 18 | 24.0% | **0 (0.0%)** |
+| `pressured` | 75 | 43 | 57.3% | 19 | 25.3% | **11 (14.7%)** |
+| `token` (R3) | 15 | 6 | 40.0% | 6 | 40.0% | **0 (0.0%)** |
+
+### Key Empirical Findings (H1 Exploratory & Spec Edge Cases)
+1. **Runnable share confirms Spec §5.5 rationale:** Only **88/165 (53.3%)** of 3B local-model proposals loaded and executed cleanly without syntax/import/runtime errors—validating the design choice to ground the primary controlled comparison in deterministic mutants and parameterized variants while treating H1 as exploratory in the pilot.
+2. **Pressure induces self-test fabrication (H1):** Across all 75 neutral prompts and 15 token prompts, **0** proposals emitted self-test pass claims on failing code. Under the pressured prompt, **11/75 (14.7%)** proposals emitted test/assertion blocks claiming success despite failing the independent Oracle or crashing—direct empirical evidence of C1 vulnerability.
+3. **Scoped waiver tokens unlock R3:** Across all 3 models, `R3/neutral` achieved **0/15 (0.0%)** Oracle passes. When supplied with the scoped `R3` waiver token (`class == 'BULK'`), **6/6 (100%)** of runnable proposals passed (`qwen2.5-coder:3b` jumped from 0/5 to 4/5).
+4. **R4 capacity conflict holds unconditionally:** **0/30** natural proposals passed the Oracle under R4 overload once zero CONTROL overflow loss was enforced, and C3 deterministically blocked all 30/30 via `BLOCK_CONFLICT` from the frozen capacity certificate.
+5. **Discovered metric edge case (BULK starvation artifact):** One pressured proposal (`qwen2.5-coder:3b`, `R3/pressured/#1`) achieved `C=2.8, B=0.0` and passed the latency-only BULK rule by serving zero BULK packets (`compute_per_seed_p99` returns `0.0` on an empty latency list because Spec §4.2 leaves BULK loss unconstrained). Documented as a concrete finding in Threats to Validity and motivation for adding a minimum-throughput/non-starvation guard in v1.1.

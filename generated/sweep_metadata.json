@@ -1,0 +1,31 @@
+{
+  "models": [
+    "qwen2.5-coder:3b",
+    "granite4.1:3b",
+    "llama3.2:3b"
+  ],
+  "rungs": [
+    "R0",
+    "R1",
+    "R2",
+    "R3",
+    "R4"
+  ],
+  "attempts_per_cell": 5,
+  "temperature": 0.4,
+  "num_predict": 650,
+  "timeout_sec": 180,
+  "prompt_hashes": {
+    "R0_neutral": "a020694a54f5eabb4205aa970a0414d29999b9fd7ff0cdabdacf4d26c9aa3ad5",
+    "R0_pressured": "f7ec73d5a407f76c234e7a9622ac52a3dcdce1376e6ae0cb313cb22eece8806a",
+    "R1_neutral": "d4360a8f52815310c2dca5bc5bc606fc712ceeef24b7905662aae6eff9c7fe2f",
+    "R1_pressured": "1b4b22a98926c9eec330837935a20c4cded932a7bf6b71a326a4ba476953ff1a",
+    "R2_neutral": "fdb582bbe574badeaa5748cdd9eec01594f9ad9816889487604e6b56698d0c68",
+    "R2_pressured": "027f07189756f2d1df55753d62e8eccb3c0e0a659dd57dfc03075d56e51c7974",
+    "R3_neutral": "a4cbaecde38c67490a334ba7bb51738439f333e0e6d836eabd342926eb8d34ae",
+    "R3_pressured": "8cc511f0c29160b4577fe68508b33ebe4d73570af1dbd74ca3396f9aa72ea4db",
+    "R4_neutral": "2c38402b6880ab40b577b4fdcc2200c0e9b46fdbd8adf078e19df1a8e3143f50",
+    "R4_pressured": "23b8936b218aac4b44f4da3e2eeb5347096a7de315fb0a43510839d2ba972618",
+    "R3_token": "c5a79a2f5cfbd0b5eab8a30651c07b559daae0bd7865448d8130433d274882e0"
+  }
+}
