@@ -665,3 +665,9 @@ Saved detailed JSON to generated/full_sweep_results.json
 - **M6 (Stretch):** Formalized violated joint invariant; C3 accepts `10/10` (C2 rejects `10/10`). H3 scoped to **M3–M5 and M7 only**.
 - **LLM Sweep (165 proposals, 145 unique class ASTs, 20-seed v1.1):** `91/165 (55.2%)` runnable; `22/165 (13.3%)` Oracle v1.1 passes (`13` unique ASTs: `R0=0, R1=17, R2=0, R3/token=5, R4=0`); `0` starvation false passes; `30/30` R4 certificate `BLOCK_CONFLICT` reported separately.
 - **H1 Status:** **Inconclusive / not supported by natural 3B LLM data** (`14/75` pressured emitted self-tests, `1/14` exited `rc=0` and passed Oracle -> `0` C1 silent acceptances; `2/75` failing text claims). Supersedes S13c wording. See `ERRATA.md`.
+
+## Stage S25: Audit Fixes O1–O6 & ERRATA E8 Complete (`R3_ref` Verified)
+- **Date:** 24 Nov 2026
+- **Tests:** `221 passed` (`pytest -q`), `ALL SUB-TOTAL ASSERTIONS PASSED` (`scripts/generate_v12_tables.py`).
+- **O2 / E8 Result:** Added `proposer/reference/r3_v12.py` (`R3ReferenceV12Scheduler`); passes 20-seed v1.2 verdict (`C_ub = 6.20`, `20/20 <= 8.77`; `B_ub = 105.43`, `20/20 <= 231.10`; `C_ovf = 0.0000`; `B_deliv = 0.9999`). Legacy `R3_ref_legacy_RR` (`18/20 FAIL`) retained on record.
+- **Disclosures locked in `ERRATA.md` (E1–E8):** O1 Stage 1 draft vs. executed calibration trail; O3 `R2` relabeled sanity rung; O4 165-proposal LLM lane designated Exploratory / Appendix Only; O5 seed reuse (`0..19`, `20000..20019`) and legitimate-variant selection history; O6 v1.1 labeled superseded for calibration flaws (not like-for-like).

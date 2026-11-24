@@ -66,3 +66,17 @@ def test_v12_r1_reference_runs_cleanly():
     log = run(arr, OldestFirstStrictScheduler(), 13, 1000)
     assert audit_departure_log(arr, log) == []
     assert len(log.departures) > 0
+
+
+def test_v12_r3_reference_runs_cleanly():
+    from proposer.reference.r3_v12 import R3ReferenceV12Scheduler
+    arr = generate_arrivals(TrafficConfig(8, 1000, C.V12_R3_BULK_RATE, 0.0, 10000))
+    log = run(arr, R3ReferenceV12Scheduler(), 8, 1000)
+    assert audit_departure_log(arr, log) == []
+    assert len(log.departures) > 0
+
+
+def test_errata_contains_e1_through_e8():
+    err = Path("ERRATA.md").read_text(encoding="utf-8")
+    for eid in ("## E1", "## E2", "## E3", "## E4", "## E5", "## E6", "## E7", "## E8"):
+        assert eid in err, f"Missing {eid} in ERRATA.md"
